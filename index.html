@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Line Chart</title>
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment"></script>
+    <!-- Add Chart.js Moment.js adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+</head>
+<body>
+    <h1>K-Line Data Visualization</h1>
+    <canvas id="klineChart" width="800" height="400"></canvas>
+
+    <script>
+        async function fetchKlineData() {
+            try {
+                const response = await fetch('http://localhost:8000/kline');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error("Error fetching K-Line data:", error);
+            }
+        }
+
+        function renderChart(data) {
+            const timestamps = data.map(d => new Date(d.timestamp));  // Ensure timestamps are in date format
+            const closes = data.map(d => d.close);
+
+            const ctx = document.getElementById('klineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Close Price',
+                        data: closes,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                tooltipFormat: 'll HH:mm'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchKlineData().then(data => {
+            if (data) {
+                renderChart(data);
+            }
+        });
+    </script>
+</body>
+</html>
